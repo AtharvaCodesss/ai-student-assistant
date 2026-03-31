@@ -1,8 +1,13 @@
 <!DOCTYPE html>
-<html>
+
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Student Assistant</title>
 
+    ```
+    <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
 
     <style>
@@ -37,15 +42,6 @@
                 0 0 40px rgba(0,255,255,0.3),
                 0 0 80px rgba(0,255,255,0.2);
             text-align: center;
-            transition: 0.4s;
-        }
-
-        .container:hover {
-            transform: scale(1.02);
-            box-shadow:
-                0 0 40px rgba(0,255,255,0.8),
-                0 0 80px rgba(0,255,255,0.6),
-                0 0 120px rgba(0,255,255,0.4);
         }
 
         h1 {
@@ -65,21 +61,12 @@
         button {
             margin-top: 15px;
             padding: 12px 30px;
-            border: none;
             border-radius: 12px;
+            border: none;
             background: linear-gradient(to right, #4facfe, #00f2fe);
             color: black;
             font-weight: bold;
             cursor: pointer;
-            transition: 0.3s;
-        }
-
-        button:hover {
-            transform: scale(1.1);
-            box-shadow:
-                0 0 10px #00f2fe,
-                0 0 20px #00f2fe,
-                0 0 40px #00f2fe;
         }
 
         .tabs {
@@ -106,39 +93,27 @@
             padding: 20px;
             border-radius: 15px;
             background: rgba(0,0,0,0.3);
-            box-shadow:
-                0 0 10px rgba(255,255,255,0.2),
-                0 0 20px rgba(255,255,255,0.2);
             max-height: 200px;
             overflow-y: auto;
         }
 
-        /* 🔥 FIXED TEXT DISPLAY */
         #result {
             white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-
-        .result-box::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .result-box::-webkit-scrollbar-thumb {
-            background: #00f2fe;
-            border-radius: 10px;
         }
 
         #loader {
-            margin-top: 15px;
             display: none;
         }
     </style>
+    ```
+
 </head>
 
 <body>
 
 <div class="container">
 
+    ```
     <h1>🚀 AI Student Assistant</h1>
 
     <div class="tabs">
@@ -146,7 +121,7 @@
         <button class="tab-btn" onclick="showTab('quiz')">Quiz Generator</button>
     </div>
 
-    <!-- Summarizer -->
+    <!-- SUMMARY -->
     <div id="summaryTab">
         <textarea id="text" placeholder="Enter your notes..."></textarea><br>
         <button onclick="summarize()">Summarize</button>
@@ -159,9 +134,9 @@
         </div>
     </div>
 
-    <!-- Quiz -->
+    <!-- QUIZ -->
     <div id="quizTab" style="display:none;">
-        <textarea id="topic" placeholder="Enter topic (e.g. Java loops)"></textarea><br>
+        <textarea id="topic" placeholder="Enter topic..."></textarea><br>
         <button onclick="generateQuiz()">Generate Quiz</button>
 
         <div class="result-box">
@@ -169,33 +144,19 @@
             <ul id="quizResult"></ul>
         </div>
     </div>
+    ```
 
 </div>
 
 <script>
 
-    // Tabs
+    // Tab switch
     function showTab(tab) {
         document.getElementById("summaryTab").style.display = tab === 'summary' ? 'block' : 'none';
         document.getElementById("quizTab").style.display = tab === 'quiz' ? 'block' : 'none';
     }
 
-    // Typing effect FIXED
-    function typeEffect(text, element) {
-        let i = 0;
-        element.textContent = "";
-
-        function typing() {
-            if (i < text.length) {
-                element.textContent += text.charAt(i);
-                i++;
-                setTimeout(typing, 10);
-            }
-        }
-        typing();
-    }
-
-    // Summarize
+    // SUMMARIZE (POST FIXED)
     function summarize() {
         const text = document.getElementById("text").value;
         const loader = document.getElementById("loader");
@@ -204,7 +165,7 @@
         loader.style.display = "block";
         result.textContent = "";
 
-        fetch("http://localhost:8080/summarize", {
+        fetch("/summarize", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -214,18 +175,22 @@
         .then(res => res.json())
         .then(data => {
             loader.style.display = "none";
-            typeEffect(data.summary, result);
+            result.textContent = data.summary;
+        })
+        .catch(err => {
+            loader.style.display = "none";
+            result.textContent = "Error: " + err;
         });
     }
 
-    // Quiz
+    // QUIZ (POST FIXED)
     function generateQuiz() {
         const topic = document.getElementById("topic").value;
         const list = document.getElementById("quizResult");
 
         list.innerHTML = "🤖 Generating questions...";
 
-        fetch("http://localhost:8080/quiz", {
+        fetch("/quiz", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -243,6 +208,9 @@
                     list.appendChild(li);
                 }, index * 300);
             });
+        })
+        .catch(err => {
+            list.innerHTML = "Error: " + err;
         });
     }
 
