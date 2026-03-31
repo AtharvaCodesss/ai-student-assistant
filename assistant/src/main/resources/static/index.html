@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Student Assistant</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(270deg, #1d2671, #c33764, #00f2fe);
+            background-size: 600% 600%;
+            animation: gradientMove 10s ease infinite;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            width: 60%;
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 25px;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow:
+                0 0 20px rgba(0,255,255,0.4),
+                0 0 40px rgba(0,255,255,0.3),
+                0 0 80px rgba(0,255,255,0.2);
+            text-align: center;
+            transition: 0.4s;
+        }
+
+        .container:hover {
+            transform: scale(1.02);
+            box-shadow:
+                0 0 40px rgba(0,255,255,0.8),
+                0 0 80px rgba(0,255,255,0.6),
+                0 0 120px rgba(0,255,255,0.4);
+        }
+
+        h1 {
+            font-size: 2.8rem;
+        }
+
+        textarea {
+            width: 90%;
+            height: 120px;
+            padding: 12px;
+            border-radius: 12px;
+            border: none;
+            outline: none;
+            font-size: 16px;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            color: black;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            transform: scale(1.1);
+            box-shadow:
+                0 0 10px #00f2fe,
+                0 0 20px #00f2fe,
+                0 0 40px #00f2fe;
+        }
+
+        .tabs {
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            margin: 5px;
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .active {
+            background: #00f2fe;
+            color: black;
+        }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 15px;
+            background: rgba(0,0,0,0.3);
+            box-shadow:
+                0 0 10px rgba(255,255,255,0.2),
+                0 0 20px rgba(255,255,255,0.2);
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        /* 🔥 FIXED TEXT DISPLAY */
+        #result {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .result-box::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .result-box::-webkit-scrollbar-thumb {
+            background: #00f2fe;
+            border-radius: 10px;
+        }
+
+        #loader {
+            margin-top: 15px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>🚀 AI Student Assistant</h1>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('summary')">Summarizer</button>
+        <button class="tab-btn" onclick="showTab('quiz')">Quiz Generator</button>
+    </div>
+
+    <!-- Summarizer -->
+    <div id="summaryTab">
+        <textarea id="text" placeholder="Enter your notes..."></textarea><br>
+        <button onclick="summarize()">Summarize</button>
+
+        <div id="loader">🤖 AI is thinking...</div>
+
+        <div class="result-box">
+            <h3>Summary:</h3>
+            <p id="result"></p>
+        </div>
+    </div>
+
+    <!-- Quiz -->
+    <div id="quizTab" style="display:none;">
+        <textarea id="topic" placeholder="Enter topic (e.g. Java loops)"></textarea><br>
+        <button onclick="generateQuiz()">Generate Quiz</button>
+
+        <div class="result-box">
+            <h3>Questions:</h3>
+            <ul id="quizResult"></ul>
+        </div>
+    </div>
+
+</div>
+
+<script>
+
+    // Tabs
+    function showTab(tab) {
+        document.getElementById("summaryTab").style.display = tab === 'summary' ? 'block' : 'none';
+        document.getElementById("quizTab").style.display = tab === 'quiz' ? 'block' : 'none';
+    }
+
+    // Typing effect FIXED
+    function typeEffect(text, element) {
+        let i = 0;
+        element.textContent = "";
+
+        function typing() {
+            if (i < text.length) {
+                element.textContent += text.charAt(i);
+                i++;
+                setTimeout(typing, 10);
+            }
+        }
+        typing();
+    }
+
+    // Summarize
+    function summarize() {
+        const text = document.getElementById("text").value;
+        const loader = document.getElementById("loader");
+        const result = document.getElementById("result");
+
+        loader.style.display = "block";
+        result.textContent = "";
+
+        fetch("http://localhost:8080/summarize", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ text: text })
+        })
+        .then(res => res.json())
+        .then(data => {
+            loader.style.display = "none";
+            typeEffect(data.summary, result);
+        });
+    }
+
+    // Quiz
+    function generateQuiz() {
+        const topic = document.getElementById("topic").value;
+        const list = document.getElementById("quizResult");
+
+        list.innerHTML = "🤖 Generating questions...";
+
+        fetch("http://localhost:8080/quiz", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ topic: topic })
+        })
+        .then(res => res.json())
+        .then(data => {
+            list.innerHTML = "";
+
+            data.questions.forEach((q, index) => {
+                setTimeout(() => {
+                    const li = document.createElement("li");
+                    li.textContent = q;
+                    list.appendChild(li);
+                }, index * 300);
+            });
+        });
+    }
+
+</script>
+
+</body>
+</html>
