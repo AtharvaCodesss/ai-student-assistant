@@ -1,27 +1,62 @@
 package com.studentai.assistant.controller;
 
-import com.studentai.assistant.model.*;
-import com.studentai.assistant.service.AIService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import java.util.*;
 
 @RestController
+@CrossOrigin(origins = "*")
 public class AIController {
 
-    @Autowired
-    private AIService aiService;
 
+    // ===================== SUMMARIZE =====================
     @PostMapping("/summarize")
-    public SummaryResponse summarize(@RequestBody SummaryRequest request) {
-        String result = aiService.summarizeText(request.getText());
-        return new SummaryResponse(result);
+    public Map<String, String> summarize(@RequestBody Map<String, String> request) {
+
+        String text = request.get("text");
+
+        // 🔒 Safety check (prevents crash)
+        if (text == null || text.trim().isEmpty()) {
+            text = "No input provided";
+        }
+
+        // 🧠 Simple summary logic
+        String summary;
+        if (text.length() > 50) {
+            summary = text.substring(0, 50) + "...";
+        } else {
+            summary = text;
+        }
+
+        Map<String, String> response = new HashMap<>();
+        response.put("summary", summary);
+
+        return response;
     }
 
+    // ===================== QUIZ =====================
     @PostMapping("/quiz")
-    public QuizResponse generateQuiz(@RequestBody QuizRequest request) {
-        List<String> questions = aiService.generateQuiz(request.getTopic());
-        return new QuizResponse(questions);
+    public Map<String, List<String>> quiz(@RequestBody Map<String, String> request) {
+
+        String topic = request.get("topic");
+
+        // 🔒 Safety check
+        if (topic == null || topic.trim().isEmpty()) {
+            topic = "General Knowledge";
+        }
+
+        List<String> questions = new ArrayList<>();
+
+        questions.add("What is " + topic + "?");
+        questions.add("Explain the basics of " + topic + ".");
+        questions.add("Why is " + topic + " important?");
+        questions.add("Give one real-life example of " + topic + ".");
+        questions.add("What are advantages of " + topic + "?");
+
+        Map<String, List<String>> response = new HashMap<>();
+        response.put("questions", questions);
+
+        return response;
     }
+
+
 }
