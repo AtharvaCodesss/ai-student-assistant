@@ -2,11 +2,10 @@ FROM eclipse-temurin:17-jdk
 
 WORKDIR /app
 
-COPY assistant /app
+COPY . .
 
-WORKDIR /app
-
-RUN ./mvnw clean package
+RUN apt-get update && apt-get install -y maven
+RUN mvn clean package -DskipTests
 
 EXPOSE 8080
 
